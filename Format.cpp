@@ -627,47 +627,6 @@ FormatStyle getGoogleStyle(FormatStyle::LanguageKind Language) {
 
   return GoogleStyle;
 }
-extern bool IndentToFunctionName;
-
-FormatStyle getRailStyle() {
-    IndentToFunctionName = true;
-    FormatStyle RailStyle = getGoogleStyle(FormatStyle::LK_Cpp);
-    RailStyle.Language = FormatStyle::LK_Cpp;
-
-    RailStyle.AccessModifierOffset = -4;
-    RailStyle.AllowShortFunctionsOnASingleLine = FormatStyle::SFS_Inline;
-    RailStyle.AllowShortIfStatementsOnASingleLine = false;
-    RailStyle.AllowShortLoopsOnASingleLine = false;
-    RailStyle.BinPackParameters = false;
-    RailStyle.BinPackArguments = false;
-    RailStyle.BreakAfterJavaFieldAnnotations = true;
-    RailStyle.ColumnLimit = 100;
-    RailStyle.DerivePointerAlignment = false;
-    RailStyle.IndentWidth = 4;
-    RailStyle.SortIncludes = false;
-    RailStyle.SpaceAfterTemplateKeyword = false;
-    RailStyle.TabWidth = 4;
-    RailStyle.AllowAllParametersOfDeclarationOnNextLine = false;
-    RailStyle.AlignAfterOpenBracket = FormatStyle::BAS_DontAlign;
-
-    RailStyle.AlwaysBreakBeforeMultilineStrings = true;
-    RailStyle.AlwaysBreakTemplateDeclarations = true;
-    RailStyle.ConstructorInitializerAllOnOneLineOrOnePerLine = true;
-    RailStyle.IncludeCategories = { { "^<.*\\.h>", 1 },{ "^<.*", 2 },{ ".*", 3 } };
-    RailStyle.IncludeIsMainRegex = "([-_](test|unittest))?$";
-    RailStyle.IndentCaseLabels = true;
-    RailStyle.KeepEmptyLinesAtTheStartOfBlocks = false;
-    RailStyle.ObjCSpaceAfterProperty = false;
-    RailStyle.ObjCSpaceBeforeProtocolList = false;
-    RailStyle.PointerAlignment = FormatStyle::PAS_Left;
-    RailStyle.SpacesBeforeTrailingComments = 2;
-    RailStyle.Standard = FormatStyle::LS_Auto;
-
-    RailStyle.PenaltyReturnTypeOnItsOwnLine = 200;
-    RailStyle.PenaltyBreakBeforeFirstCallParameter = 1;
-
-    return RailStyle;
-}
 
 FormatStyle getChromiumStyle(FormatStyle::LanguageKind Language) {
   FormatStyle ChromiumStyle = getGoogleStyle(Language);
@@ -765,8 +724,6 @@ bool getPredefinedStyle(StringRef Name, FormatStyle::LanguageKind Language,
     *Style = getWebKitStyle();
   } else if (Name.equals_lower("gnu")) {
     *Style = getGNUStyle();
-  } else if (Name.equals_lower("rail")) {
-    *Style = getRailStyle();
   } else if (Name.equals_lower("none")) {
     *Style = getNoStyle();
   } else {
@@ -1868,7 +1825,7 @@ FormatStyle getStyle(StringRef StyleName, StringRef FileName,
   Style.Language = getLanguageByFileName(FileName);
   if (!getPredefinedStyle(FallbackStyle, Style.Language, &Style)) {
     llvm::errs() << "Invalid fallback style \"" << FallbackStyle
-                 << "\" using rail style\n";
+                 << "\" using LLVM style\n";
     return Style;
   }
 

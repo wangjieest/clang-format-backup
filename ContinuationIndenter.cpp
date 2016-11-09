@@ -24,7 +24,6 @@
 
 namespace clang {
 namespace format {
-bool IndentToFunctionName = false;
 
 // Returns the length of everything up to the first possible line break after
 // the ), ], } or > matching \c Tok.
@@ -136,11 +135,6 @@ bool ContinuationIndenter::canBreak(const LineState &State) {
       return false;
   }
 
-//  if (IndentToFunctionName) {
-//      if (Current.isOneOf(TT_InheritanceColon, TT_CtorInitializerColon))
-//          return false;
-//  }
-
   return !State.Stack.back().NoLineBreak;
 }
 
@@ -176,16 +170,6 @@ bool ContinuationIndenter::mustBreak(const LineState &State) {
       getLengthToMatchingParen(Previous) + State.Column - 1 >
           getColumnLimit(State))
     return true;
-
-  if (IndentToFunctionName) {
-      if (Previous.is(TT_CtorInitializerColon) &&
-          (State.Column + State.Line->Last->TotalLength - Current.TotalLength >
-              getColumnLimit(State) ||
-              State.Stack.back().BreakBeforeParameter) &&
-              ((Style.AllowShortFunctionsOnASingleLine != FormatStyle::SFS_All) ||
-                  Style.BreakConstructorInitializersBeforeComma || Style.ColumnLimit != 0))
-          return true;
-  }
   if (Current.is(TT_CtorInitializerColon) &&
       (State.Column + State.Line->Last->TotalLength - Current.TotalLength + 2 >
            getColumnLimit(State) ||
@@ -193,15 +177,9 @@ bool ContinuationIndenter::mustBreak(const LineState &State) {
       ((Style.AllowShortFunctionsOnASingleLine != FormatStyle::SFS_All) ||
        Style.BreakConstructorInitializersBeforeComma || Style.ColumnLimit != 0))
     return true;
-
   if (Current.is(TT_SelectorName) && State.Stack.back().ObjCSelectorNameFound &&
       State.Stack.back().BreakBeforeParameter)
     return true;
-  
-  if (IndentToFunctionName &&
-      Previous.is(TT_CtorInitializerComma) &&
-      State.Stack.back().ContainsLineBreak)
-      return true;
 
   unsigned NewLineColumn = getNewLineColumn(State);
   if (Current.isMemberAccess() && Style.ColumnLimit != 0 &&
@@ -390,36 +368,10 @@ void ContinuationIndenter::addTokenOnCurrentLine(LineState &State, bool DryRun,
       Current.FakeLParens.back() > prec::Unknown)
     State.Stack.back().NoLineBreak = true;
 
-  bool processed = false;
-  if (IndentToFunctionName && 
-      Previous.opensScope() && 
-      Style.AlignAfterOpenBracket == FormatStyle::BAS_DontAlign  &&
-      (Current.isNot(TT_LineComment) || Previous.BlockKind == BK_BracedInit)) {
-      const FormatToken *PrePreviousNonComment =
-          Previous.getPreviousNonComment();
-      if (PrePreviousNonComment)
-      {
-          processed = true;
-          unsigned ContinuationIndent =
-              std::max(State.Stack.back().LastSpace, State.Stack.back().Indent);
-          ContinuationIndent = std::max(State.Column - PrePreviousNonComment->ColumnWidth,
-              ContinuationIndent);
-
-          if (Style.ContinuationIndentWidth &&
-              ContinuationIndent%Style.ContinuationIndentWidth != 0)
-          {
-              ContinuationIndent = ContinuationIndent +
-                  Style.ContinuationIndentWidth -
-                  ContinuationIndent%Style.ContinuationIndentWidth;
-          }
-          State.Stack.back().Indent = ContinuationIndent + Spaces;
-      }
-  }
-
-  if (!processed && Style.AlignAfterOpenBracket != FormatStyle::BAS_DontAlign &&
+  if (Style.AlignAfterOpenBracket != FormatStyle::BAS_DontAlign &&
       Previous.opensScope() && Previous.isNot(TT_ObjCMethodExpr) &&
       (Current.isNot(TT_LineComment) || Previous.BlockKind == BK_BracedInit))
-      State.Stack.back().Indent = State.Column + Spaces;
+    State.Stack.back().Indent = State.Column + Spaces;
   if (State.Stack.back().AvoidBinPacking && startsNextParameter(Current, Style))
     State.Stack.back().NoLineBreak = true;
   if (startsSegmentOfBuilderTypeCall(Current) &&
@@ -513,35 +465,7 @@ unsigned ContinuationIndenter::addTokenOnNewLine(LineState &State,
        State.Stack.back().BreakBeforeParameter))
     Penalty += Style.PenaltyBreakFirstLessLess;
 
-  bool processed = false;
-  if (IndentToFunctionName &&
-      PreviousNonComment && PreviousNonComment->is(tok::l_paren) &&
-      !Style.AllowAllParametersOfDeclarationOnNextLine ) {
-      const FormatToken *PrePreviousNonComment =
-          PreviousNonComment->getPreviousNonComment();
-      if (PrePreviousNonComment)
-      {
-          unsigned ContinuationIndent =
-              std::max(State.Stack.back().LastSpace, State.Stack.back().Indent);
-          
-          State.Column = std::max(State.Column - PrePreviousNonComment->ColumnWidth,
-                                  ContinuationIndent);
-
-          if (Style.ContinuationIndentWidth &&
-              State.Column%Style.ContinuationIndentWidth != 0)
-          {
-              State.Column = State.Column + Style.ContinuationIndentWidth - 
-                  State.Column%Style.ContinuationIndentWidth;
-          }
-          State.Stack.back().BreakBeforeParameter = true;
-          State.Stack.back().Indent = State.Column;
-          processed = true;
-      }
-  }
-
-  if(!processed) {
-      State.Column = getNewLineColumn(State);
-  }
+  State.Column = getNewLineColumn(State);
 
   // Indent nested blocks relative to this column, unless in a very specific
   // JavaScript special case where:
