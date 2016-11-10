@@ -405,8 +405,7 @@ void ContinuationIndenter::addTokenOnCurrentLine(LineState &State, bool DryRun,
           ContinuationIndent = std::max(State.Column - PrePreviousNonComment->ColumnWidth,
               ContinuationIndent);
 
-          if (Style.ContinuationIndentWidth &&
-              ContinuationIndent%Style.ContinuationIndentWidth != 0)
+          if (Style.ContinuationIndentWidth)
           {
               ContinuationIndent = ContinuationIndent +
                   Style.ContinuationIndentWidth -
@@ -521,21 +520,21 @@ unsigned ContinuationIndenter::addTokenOnNewLine(LineState &State,
           PreviousNonComment->getPreviousNonComment();
       if (PrePreviousNonComment)
       {
+          processed = true;
           unsigned ContinuationIndent =
               std::max(State.Stack.back().LastSpace, State.Stack.back().Indent);
           
-          State.Column = std::max(State.Column - PrePreviousNonComment->ColumnWidth,
+          ContinuationIndent = std::max(State.Column - PrePreviousNonComment->ColumnWidth,
                                   ContinuationIndent);
 
-          if (Style.ContinuationIndentWidth &&
-              State.Column%Style.ContinuationIndentWidth != 0)
+          if (Style.ContinuationIndentWidth)
           {
-              State.Column = State.Column + Style.ContinuationIndentWidth - 
-                  State.Column%Style.ContinuationIndentWidth;
+              ContinuationIndent = ContinuationIndent + Style.ContinuationIndentWidth -
+                  ContinuationIndent%Style.ContinuationIndentWidth;
           }
           State.Stack.back().BreakBeforeParameter = true;
-          State.Stack.back().Indent = State.Column;
-          processed = true;
+          State.Column = ContinuationIndent;
+          State.Stack.back().Indent = ContinuationIndent;
       }
   }
 
