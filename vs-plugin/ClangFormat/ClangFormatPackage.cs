@@ -232,15 +232,20 @@ namespace LLVM.ClangFormat
                 byte[] buffer = enc.GetBytes(text);
                 var root = XElement.Parse(RunClangFormat(buffer, start, length, path, filePath));
                 var edit = view.TextBuffer.CreateEdit();
+                int last_offset_utf8 = 0;
+                int last_offset_utf16 = 0;
                 foreach (XElement replacement in root.Descendants("replacement"))
                 {
-                    int idx = int.Parse(replacement.Attribute("offset").Value);
-                    int len = int.Parse(replacement.Attribute("length").Value);
+                    int offset_utf8 = int.Parse(replacement.Attribute("offset").Value);
+                    int length_utf8 = int.Parse(replacement.Attribute("length").Value);
 
                     // convert the multi bytes index to utf16 index
-                    idx = enc.GetCharCount(buffer, 0, idx);
-                    len = enc.GetCharCount(buffer, idx, len);
-                    edit.Replace(idx, len, replacement.Value);
+                    // assume that offsets is in order.
+                    int offset_utf16 = enc.GetCharCount(buffer, last_offset_utf8, offset_utf8 - last_offset_utf8) + last_offset_utf16;
+                    int length_utf16 = enc.GetCharCount(buffer, offset_utf8, length_utf8);
+                    edit.Replace(offset_utf16, length_utf16, replacement.Value);
+                    last_offset_utf8 = offset_utf8;
+                    last_offset_utf16 = offset_utf16;
                 }
                 edit.Apply();
             }

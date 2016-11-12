@@ -1941,7 +1941,8 @@ unsigned TokenAnnotator::splitPenalty(const AnnotatedLine &Line,
     return Line.MightBeFunctionDecl ? 50 : 500;
 
   if (Left.is(tok::l_paren) && InFunctionDecl &&
-      Style.AlignAfterOpenBracket != FormatStyle::BAS_DontAlign)
+      Style.AlignAfterOpenBracket != FormatStyle::BAS_DontAlign &&
+      Style.AlignAfterOpenBracket != FormatStyle::BAS_AlignParent)
     return 100;
   if (Left.is(tok::l_paren) && Left.Previous &&
       Left.Previous->isOneOf(tok::kw_if, tok::kw_for))
@@ -1953,7 +1954,8 @@ unsigned TokenAnnotator::splitPenalty(const AnnotatedLine &Line,
   if (Left.is(TT_TemplateOpener))
     return 100;
   if (Left.opensScope()) {
-    if (Style.AlignAfterOpenBracket == FormatStyle::BAS_DontAlign)
+    if (Style.AlignAfterOpenBracket == FormatStyle::BAS_DontAlign || 
+        Style.AlignAfterOpenBracket == FormatStyle::BAS_AlignParent)
       return 0;
     return Left.ParameterCount > 1 ? Style.PenaltyBreakBeforeFirstCallParameter
                                    : 19;

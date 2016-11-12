@@ -420,6 +420,7 @@ void ContinuationIndenter::addTokenOnCurrentLine(LineState &State, bool DryRun,
   }
 
   if (!processed && Style.AlignAfterOpenBracket != FormatStyle::BAS_DontAlign &&
+      Style.AlignAfterOpenBracket != FormatStyle::BAS_AlignParent &&
       Previous.opensScope() && Previous.isNot(TT_ObjCMethodExpr) &&
       (Current.isNot(TT_LineComment) || Previous.BlockKind == BK_BracedInit))
     State.Stack.back().Indent = State.Column + Spaces;
@@ -929,7 +930,8 @@ void ContinuationIndenter::moveStatePastFakeLParens(LineState &State,
         (Style.AlignOperands || *I < prec::Assignment) &&
         (!Previous || Previous->isNot(tok::kw_return) ||
          (Style.Language != FormatStyle::LK_Java && *I > 0)) &&
-        (Style.AlignAfterOpenBracket != FormatStyle::BAS_DontAlign ||
+        ((Style.AlignAfterOpenBracket != FormatStyle::BAS_DontAlign 
+            &&Style.AlignAfterOpenBracket != FormatStyle::BAS_AlignParent)||
          *I != prec::Comma || Current.NestingLevel == 0))
       NewParenState.Indent =
           std::max(std::max(State.Column, NewParenState.Indent),
@@ -962,7 +964,8 @@ void ContinuationIndenter::moveStatePastFakeLParens(LineState &State,
     if (*I > prec::Unknown)
       NewParenState.LastSpace = std::max(NewParenState.LastSpace, State.Column);
     if (*I != prec::Conditional && !Current.is(TT_UnaryOperator) &&
-        Style.AlignAfterOpenBracket != FormatStyle::BAS_DontAlign)
+        Style.AlignAfterOpenBracket != FormatStyle::BAS_DontAlign &&
+        Style.AlignAfterOpenBracket != FormatStyle::BAS_AlignParent)
       NewParenState.StartOfFunctionCall = State.Column;
 
     // Always indent conditional expressions. Never indent expression where
