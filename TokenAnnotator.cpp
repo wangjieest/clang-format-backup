@@ -22,7 +22,7 @@
 
 namespace clang {
 namespace format {
-    extern bool IndentToFunctionName;
+    extern bool SpecialRailStyle;
 namespace {
 
 /// \brief A parser that gathers additional information about tokens.
@@ -2468,7 +2468,7 @@ bool TokenAnnotator::canBreakBefore(const AnnotatedLine &Line,
   if (Left.is(TT_ConditionalExpr) || Left.is(tok::question))
     return !Style.BreakBeforeTernaryOperators;
 
-//  if (IndentToFunctionName) {
+//  if (SpecialRailStyle) {
 //      if (Left.is(TT_InheritanceColon))
 //          return true;
 //  }

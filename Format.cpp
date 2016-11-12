@@ -627,10 +627,10 @@ FormatStyle getGoogleStyle(FormatStyle::LanguageKind Language) {
 
   return GoogleStyle;
 }
-extern bool IndentToFunctionName;
+extern bool SpecialRailStyle;
 
 FormatStyle getRailStyle() {
-    IndentToFunctionName = true;
+    SpecialRailStyle = true;
     FormatStyle RailStyle = getGoogleStyle(FormatStyle::LK_Cpp);
     RailStyle.Language = FormatStyle::LK_Cpp;
 
@@ -648,7 +648,7 @@ FormatStyle getRailStyle() {
     RailStyle.SpaceAfterTemplateKeyword = false;
     RailStyle.TabWidth = 4;
     RailStyle.AllowAllParametersOfDeclarationOnNextLine = false;
-    RailStyle.AlignAfterOpenBracket = FormatStyle::BAS_DontAlign;
+    RailStyle.AlignAfterOpenBracket = FormatStyle::BAS_AlignParent;
 
     RailStyle.AlwaysBreakBeforeMultilineStrings = true;
     RailStyle.AlwaysBreakTemplateDeclarations = true;
@@ -1868,7 +1868,7 @@ FormatStyle getStyle(StringRef StyleName, StringRef FileName,
   Style.Language = getLanguageByFileName(FileName);
   if (!getPredefinedStyle(FallbackStyle, Style.Language, &Style)) {
     llvm::errs() << "Invalid fallback style \"" << FallbackStyle
-                 << "\" using rail style\n";
+                 << "\" using LLVM style\n";
     return Style;
   }
 

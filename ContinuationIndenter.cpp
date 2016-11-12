@@ -24,7 +24,7 @@
 
 namespace clang {
 namespace format {
-bool IndentToFunctionName = false;
+bool SpecialRailStyle = false;
 
 // Returns the length of everything up to the first possible line break after
 // the ), ], } or > matching \c Tok.
@@ -136,7 +136,8 @@ bool ContinuationIndenter::canBreak(const LineState &State) {
       return false;
   }
 
-//  if (IndentToFunctionName) {
+   // 不在:之前换行
+// if (SpecialRailStyle) {
 //      if (Current.isOneOf(TT_InheritanceColon, TT_CtorInitializerColon))
 //          return false;
 //  }
@@ -177,7 +178,8 @@ bool ContinuationIndenter::mustBreak(const LineState &State) {
           getColumnLimit(State))
     return true;
 
-  if (IndentToFunctionName) {
+  if (SpecialRailStyle) {
+      // 是否必须换行, 由于冒号对齐的差异性, 这个换行不需要偏移2个位置
       if (Previous.is(TT_CtorInitializerColon) &&
           (State.Column + State.Line->Last->TotalLength - Current.TotalLength >
               getColumnLimit(State) ||
@@ -185,7 +187,13 @@ bool ContinuationIndenter::mustBreak(const LineState &State) {
               ((Style.AllowShortFunctionsOnASingleLine != FormatStyle::SFS_All) ||
                   Style.BreakConstructorInitializersBeforeComma || Style.ColumnLimit != 0))
           return true;
+
+      //如果换行,则每个初始化参数一行一个
+      if (!Style.BinPackArguments && Previous.is(TT_CtorInitializerComma) &&
+          State.Stack.back().ContainsLineBreak)
+          return true;
   }
+
   if (Current.is(TT_CtorInitializerColon) &&
       (State.Column + State.Line->Last->TotalLength - Current.TotalLength + 2 >
            getColumnLimit(State) ||
@@ -193,15 +201,9 @@ bool ContinuationIndenter::mustBreak(const LineState &State) {
       ((Style.AllowShortFunctionsOnASingleLine != FormatStyle::SFS_All) ||
        Style.BreakConstructorInitializersBeforeComma || Style.ColumnLimit != 0))
     return true;
-
   if (Current.is(TT_SelectorName) && State.Stack.back().ObjCSelectorNameFound &&
       State.Stack.back().BreakBeforeParameter)
     return true;
-  
-  if (IndentToFunctionName &&
-      Previous.is(TT_CtorInitializerComma) &&
-      State.Stack.back().ContainsLineBreak)
-      return true;
 
   unsigned NewLineColumn = getNewLineColumn(State);
   if (Current.isMemberAccess() && Style.ColumnLimit != 0 &&
@@ -390,10 +392,10 @@ void ContinuationIndenter::addTokenOnCurrentLine(LineState &State, bool DryRun,
       Current.FakeLParens.back() > prec::Unknown)
     State.Stack.back().NoLineBreak = true;
 
+  // AlignParent
   bool processed = false;
-  if (IndentToFunctionName && 
+  if (Style.AlignAfterOpenBracket == FormatStyle::BAS_AlignParent &&
       Previous.opensScope() && 
-      Style.AlignAfterOpenBracket == FormatStyle::BAS_DontAlign  &&
       (Current.isNot(TT_LineComment) || Previous.BlockKind == BK_BracedInit)) {
       const FormatToken *PrePreviousNonComment =
           Previous.getPreviousNonComment();
@@ -402,7 +404,8 @@ void ContinuationIndenter::addTokenOnCurrentLine(LineState &State, bool DryRun,
           processed = true;
           unsigned ContinuationIndent =
               std::max(State.Stack.back().LastSpace, State.Stack.back().Indent);
-          ContinuationIndent = std::max(State.Column - PrePreviousNonComment->ColumnWidth,
+          ContinuationIndent = std::max(State.Column - 
+              PrePreviousNonComment->ColumnWidth,
               ContinuationIndent);
 
           if (Style.ContinuationIndentWidth &&
@@ -419,7 +422,7 @@ void ContinuationIndenter::addTokenOnCurrentLine(LineState &State, bool DryRun,
   if (!processed && Style.AlignAfterOpenBracket != FormatStyle::BAS_DontAlign &&
       Previous.opensScope() && Previous.isNot(TT_ObjCMethodExpr) &&
       (Current.isNot(TT_LineComment) || Previous.BlockKind == BK_BracedInit))
-      State.Stack.back().Indent = State.Column + Spaces;
+    State.Stack.back().Indent = State.Column + Spaces;
   if (State.Stack.back().AvoidBinPacking && startsNextParameter(Current, Style))
     State.Stack.back().NoLineBreak = true;
   if (startsSegmentOfBuilderTypeCall(Current) &&
@@ -513,8 +516,9 @@ unsigned ContinuationIndenter::addTokenOnNewLine(LineState &State,
        State.Stack.back().BreakBeforeParameter))
     Penalty += Style.PenaltyBreakFirstLessLess;
 
+  // AlignParent
   bool processed = false;
-  if (IndentToFunctionName &&
+  if (Style.AlignAfterOpenBracket == FormatStyle::BAS_AlignParent &&
       PreviousNonComment && PreviousNonComment->is(tok::l_paren) &&
       !Style.AllowAllParametersOfDeclarationOnNextLine ) {
       const FormatToken *PrePreviousNonComment =
