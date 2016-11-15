@@ -39,7 +39,7 @@ namespace LLVM.ClangFormat
         private string fallbackStyle = "Rail";
         private bool sortIncludes = false;
         private string style = "file";
-        private bool debugOutput = true;
+        private bool debugOutput = false;
 
         public class StyleConverter : TypeConverter
         {
