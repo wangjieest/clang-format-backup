@@ -39,7 +39,7 @@ namespace LLVM.ClangFormat
         private string fallbackStyle = "Rail";
         private bool sortIncludes = false;
         private string style = "file";
-        private bool debugOutput = false;
+        private bool outputDetailInfo = false;
 
         public class StyleConverter : TypeConverter
         {
@@ -169,13 +169,12 @@ namespace LLVM.ClangFormat
         }
 
         [Category("LLVM/Clang")]
-        [DisplayName("Debug")]
-        [Description("Sort touched include lines.\n\n" +
-             "See also: http://clang.llvm.org/docs/ClangFormat.html.")]
-        public bool DebugOutput
+        [DisplayName("detail info")]
+        [Description("output detail line info")]
+        public bool OutputDetailInfo
         {
-            get { return debugOutput; }
-            set { debugOutput = value; }
+            get { return outputDetailInfo; }
+            set { outputDetailInfo = value; }
         }
     }
 
@@ -325,7 +324,7 @@ namespace LLVM.ClangFormat
             //    standard input.
             try
             {
-                if (GetDebugOutput())
+                if (GetOutputDetailInfo())
                 {
                     Output("clang-format.exe ");
                     Output(process.StartInfo.Arguments);
@@ -358,7 +357,7 @@ namespace LLVM.ClangFormat
                 // we will never reach this point; instead, read the standard error asynchronously.
                 throw new Exception(process.StandardError.ReadToEnd());
             }
-            if (GetDebugOutput())
+            if (GetOutputDetailInfo())
             {
                 Output("\n");
                 Output(output);
@@ -411,10 +410,10 @@ namespace LLVM.ClangFormat
             var page = (OptionPageGrid)GetDialogPage(typeof(OptionPageGrid));
             return page.SortIncludes;
         }
-        private bool GetDebugOutput()
+        private bool GetOutputDetailInfo()
         {
             var page = (OptionPageGrid)GetDialogPage(typeof(OptionPageGrid));
-            return page.DebugOutput;
+            return page.OutputDetailInfo;
         }
 
         private string GetDocumentParent(IWpfTextView view)
