@@ -248,6 +248,7 @@ namespace LLVM.ClangFormat
                     last_offset_utf16 = offset_utf16;
                 }
                 edit.Apply();
+                view.Selection.Clear();
             }
             catch (Exception e)
             {
