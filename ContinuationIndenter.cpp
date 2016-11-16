@@ -136,11 +136,11 @@ bool ContinuationIndenter::canBreak(const LineState &State) {
       return false;
   }
 
-   // 不在:之前换行
-// if (SpecialRailStyle) {
-//      if (Current.isOneOf(TT_InheritanceColon, TT_CtorInitializerColon))
-//          return false;
-//  }
+  // 不在:之前换行
+  if (SpecialRailStyle) {
+    if (Current.isOneOf(TT_InheritanceColon, TT_CtorInitializerColon))
+      return false;
+  }
 
   return !State.Stack.back().NoLineBreak;
 }
