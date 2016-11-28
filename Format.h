@@ -72,9 +72,9 @@ struct FormatStyle {
     /// \code
     ///   someLongFunction(argument1,
     ///     argument2);
-    ///   veryLongFunctionName(
-    ///     argument1,
-    ///     argument2);
+    ///   returntype data = veryLongFunctionName(
+    ///                       argument1,
+    ///                       argument2);
     /// \endcode
     BAS_AlignParent,
   };
