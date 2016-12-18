@@ -190,7 +190,8 @@ BreakableLineComment::BreakableLineComment(
                                getLineCommentIndentPrefix(Token.TokenText), "",
                                InPPDirective, Encoding, Style) {
   OriginalPrefix = Prefix;
-  if (Token.TokenText.size() > Prefix.size() /*&& isAlphanumeric(Token.TokenText[Prefix.size()])*/) {
+  if (Token.TokenText.size() > Prefix.size() && 
+      (isAlphanumeric(Token.TokenText[Prefix.size()]) || (Token.TokenText[Prefix.size()]&0x80))) {
     if (Prefix == "//")
       Prefix = "// ";
     else if (Prefix == "///")
