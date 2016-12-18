@@ -2470,10 +2470,10 @@ bool TokenAnnotator::canBreakBefore(const AnnotatedLine &Line,
   if (Left.is(TT_ConditionalExpr) || Left.is(tok::question))
     return !Style.BreakBeforeTernaryOperators;
 
-  if (SpecialRailStyle) {
-    if (Right.is(TT_InheritanceColon))
-      return false;
-  }
+//  if (SpecialRailStyle) {
+//      if (Left.is(TT_InheritanceColon))
+//          return true;
+//  }
 
   if (Right.is(TT_InheritanceColon))
     return true;
@@ -2496,8 +2496,6 @@ bool TokenAnnotator::canBreakBefore(const AnnotatedLine &Line,
     return true;
   if (Right.is(TT_RangeBasedForLoopColon))
     return false;
-  if (Left.is(TT_TemplateCloser) && Right.is(TT_TemplateOpener))
-    return true;
   if (Left.isOneOf(TT_TemplateCloser, TT_UnaryOperator) ||
       Left.is(tok::kw_operator))
     return false;
