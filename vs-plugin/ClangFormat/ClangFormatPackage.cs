@@ -39,7 +39,7 @@ namespace LLVM.ClangFormat
         private string fallbackStyle = "Rail";
         private bool sortIncludes = false;
         private string style = "file";
-        private bool debugOutput = true;
+        private bool outputDetailInfo = false;
 
         public class StyleConverter : TypeConverter
         {
@@ -169,13 +169,12 @@ namespace LLVM.ClangFormat
         }
 
         [Category("LLVM/Clang")]
-        [DisplayName("Debug")]
-        [Description("Sort touched include lines.\n\n" +
-             "See also: http://clang.llvm.org/docs/ClangFormat.html.")]
-        public bool DebugOutput
+        [DisplayName("detail info")]
+        [Description("output detail line info")]
+        public bool OutputDetailInfo
         {
-            get { return debugOutput; }
-            set { debugOutput = value; }
+            get { return outputDetailInfo; }
+            set { outputDetailInfo = value; }
         }
     }
 
@@ -194,9 +193,17 @@ namespace LLVM.ClangFormat
             var commandService = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
             if (commandService != null)
             {
-                var menuCommandID = new CommandID(GuidList.guidClangFormatCmdSet, (int)PkgCmdIDList.cmdidClangFormat);
-                var menuItem = new MenuCommand(MenuItemCallback, menuCommandID);
-                commandService.AddCommand(menuItem);
+                {
+                    var menuCommandIDFull = new CommandID(GuidList.guidClangFormatCmdFull, (int)PkgCmdIDList.cmdidClangFormatFull);
+                    var menuItemFull = new MenuCommand(MenuItemCallbackFull, menuCommandIDFull);
+                    commandService.AddCommand(menuItemFull);
+                }
+                {
+                    var menuCommandID = new CommandID(GuidList.guidClangFormatCmdSet, (int)PkgCmdIDList.cmdidClangFormat);
+                    var menuItem = new MenuCommand(MenuItemCallback, menuCommandID);
+                    commandService.AddCommand(menuItem);
+                }
+
             }
         }
         #endregion
@@ -212,6 +219,9 @@ namespace LLVM.ClangFormat
             int start = view.Selection.Start.Position.GetContainingLine().Start.Position;
             int end = view.Selection.End.Position.GetContainingLine().End.Position;
 
+            if (start >= end)
+                return;
+
             //CodePage
             var enc = System.Text.Encoding.UTF8;
 
@@ -219,6 +229,8 @@ namespace LLVM.ClangFormat
             start = enc.GetByteCount(text.ToCharArray(), 0, start);
             end = enc.GetByteCount(text.ToCharArray(), 0, end);
             int length = end - start;
+            if (length <= 0)
+                return;
 
             // clang-format doesn't support formatting a range that starts at the end
             // of the file.
@@ -248,6 +260,66 @@ namespace LLVM.ClangFormat
                     last_offset_utf16 = offset_utf16;
                 }
                 edit.Apply();
+                view.Selection.Clear();
+            }
+            catch (Exception e)
+            {
+                var uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
+                var id = Guid.Empty;
+                int result;
+                uiShell.ShowMessageBox(
+                        0, ref id,
+                        "Error while running clang-format:",
+                        e.Message,
+                        string.Empty, 0,
+                        OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                        OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST,
+                        OLEMSGICON.OLEMSGICON_INFO,
+                        0, out result);
+            }
+        }
+
+        private void MenuItemCallbackFull(object sender, EventArgs args)
+        {
+            IWpfTextView view = GetCurrentView();
+            if (view == null)
+                // We're not in a text view.
+                return;
+            string text = view.TextBuffer.CurrentSnapshot.GetText();
+
+            //CodePage
+            var enc = System.Text.Encoding.UTF8;
+
+            // convert the utf16 index to multi bytes index 
+            int start = 0;
+            int length = enc.GetByteCount(text.ToCharArray(), 0, text.Length);
+            if (length <= 0)
+                return;
+
+            string path = GetDocumentParent(view);
+            string filePath = GetDocumentPath(view);
+            try
+            {
+                byte[] buffer = enc.GetBytes(text);
+                var root = XElement.Parse(RunClangFormat(buffer, start, length, path, filePath));
+                var edit = view.TextBuffer.CreateEdit();
+                int last_offset_utf8 = 0;
+                int last_offset_utf16 = 0;
+                foreach (XElement replacement in root.Descendants("replacement"))
+                {
+                    int offset_utf8 = int.Parse(replacement.Attribute("offset").Value);
+                    int length_utf8 = int.Parse(replacement.Attribute("length").Value);
+
+                    // convert the multi bytes index to utf16 index
+                    // assume that offsets is in order.
+                    int offset_utf16 = enc.GetCharCount(buffer, last_offset_utf8, offset_utf8 - last_offset_utf8) + last_offset_utf16;
+                    int length_utf16 = enc.GetCharCount(buffer, offset_utf8, length_utf8);
+                    edit.Replace(offset_utf16, length_utf16, replacement.Value);
+                    last_offset_utf8 = offset_utf8;
+                    last_offset_utf16 = offset_utf16;
+                }
+                edit.Apply();
+                view.Selection.Clear();
             }
             catch (Exception e)
             {
@@ -324,7 +396,7 @@ namespace LLVM.ClangFormat
             //    standard input.
             try
             {
-                if (GetDebugOutput())
+                if (GetOutputDetailInfo())
                 {
                     Output("clang-format.exe ");
                     Output(process.StartInfo.Arguments);
@@ -357,7 +429,7 @@ namespace LLVM.ClangFormat
                 // we will never reach this point; instead, read the standard error asynchronously.
                 throw new Exception(process.StandardError.ReadToEnd());
             }
-            if (GetDebugOutput())
+            if (GetOutputDetailInfo())
             {
                 Output("\n");
                 Output(output);
@@ -410,10 +482,10 @@ namespace LLVM.ClangFormat
             var page = (OptionPageGrid)GetDialogPage(typeof(OptionPageGrid));
             return page.SortIncludes;
         }
-        private bool GetDebugOutput()
+        private bool GetOutputDetailInfo()
         {
             var page = (OptionPageGrid)GetDialogPage(typeof(OptionPageGrid));
-            return page.DebugOutput;
+            return page.OutputDetailInfo;
         }
 
         private string GetDocumentParent(IWpfTextView view)

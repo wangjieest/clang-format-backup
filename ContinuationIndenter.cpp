@@ -136,11 +136,12 @@ bool ContinuationIndenter::canBreak(const LineState &State) {
       return false;
   }
 
-   // 不在:之前换行
-// if (SpecialRailStyle) {
-//      if (Current.isOneOf(TT_InheritanceColon, TT_CtorInitializerColon))
-//          return false;
-//  }
+  // 不在:之前换行
+  if (SpecialRailStyle) {
+    if (Current.isOneOf(TT_InheritanceColon, TT_CtorInitializerColon)) {
+//      return false;
+    }
+  }
 
   return !State.Stack.back().NoLineBreak;
 }
@@ -179,19 +180,20 @@ bool ContinuationIndenter::mustBreak(const LineState &State) {
     return true;
 
   if (SpecialRailStyle) {
-      // 是否必须换行, 由于冒号对齐的差异性, 这个换行不需要偏移2个位置
-      if (Previous.is(TT_CtorInitializerColon) &&
-          (State.Column + State.Line->Last->TotalLength - Current.TotalLength >
-              getColumnLimit(State) ||
-              State.Stack.back().BreakBeforeParameter) &&
-              ((Style.AllowShortFunctionsOnASingleLine != FormatStyle::SFS_All) ||
-                  Style.BreakConstructorInitializersBeforeComma || Style.ColumnLimit != 0))
-          return true;
-
+    // 是否必须换行, 由于冒号对齐的差异性, 这个换行不需要偏移2个位置
+    if (Previous.is(TT_CtorInitializerColon) &&
+      ((State.Column + State.Line->Last->TotalLength - Current.TotalLength >
+        getColumnLimit(State)) ||
+        State.Stack.back().BreakBeforeParameter) &&
+        ((Style.AllowShortFunctionsOnASingleLine != FormatStyle::SFS_All) ||
+        Style.ColumnLimit != 0)){
+          //return true;
+    }
       //如果换行,则每个初始化参数一行一个
-      if (!Style.BinPackArguments && Previous.is(TT_CtorInitializerComma) &&
-          State.Stack.back().ContainsLineBreak)
-          return true;
+    if (Previous.is(TT_CtorInitializerComma) &&
+      State.Stack.back().ContainsLineBreak) {
+      //return true;
+    }
   }
 
   if (Current.is(TT_CtorInitializerColon) &&
@@ -404,16 +406,15 @@ void ContinuationIndenter::addTokenOnCurrentLine(LineState &State, bool DryRun,
           processed = true;
           unsigned ContinuationIndent =
               std::max(State.Stack.back().LastSpace, State.Stack.back().Indent);
-          ContinuationIndent = std::max(State.Column - 
-              PrePreviousNonComment->ColumnWidth,
-              ContinuationIndent);
-
-          if (Style.ContinuationIndentWidth &&
-              ContinuationIndent%Style.ContinuationIndentWidth != 0)
-          {
-              ContinuationIndent = ContinuationIndent +
-                  Style.ContinuationIndentWidth -
-                  ContinuationIndent%Style.ContinuationIndentWidth;
+          if (State.Column - PrePreviousNonComment->ColumnWidth > ContinuationIndent) {
+              ContinuationIndent = State.Column - PrePreviousNonComment->ColumnWidth;
+              if (Style.ContinuationIndentWidth && 
+                  ContinuationIndent%Style.ContinuationIndentWidth)
+              {
+                  ContinuationIndent = ContinuationIndent +
+                      Style.ContinuationIndentWidth -
+                      ContinuationIndent%Style.ContinuationIndentWidth;
+              }
           }
           State.Stack.back().Indent = ContinuationIndent + Spaces;
       }
@@ -526,21 +527,22 @@ unsigned ContinuationIndenter::addTokenOnNewLine(LineState &State,
           PreviousNonComment->getPreviousNonComment();
       if (PrePreviousNonComment)
       {
+          processed = true;
           unsigned ContinuationIndent =
               std::max(State.Stack.back().LastSpace, State.Stack.back().Indent);
-          
-          State.Column = std::max(State.Column - PrePreviousNonComment->ColumnWidth,
-                                  ContinuationIndent);
-
-          if (Style.ContinuationIndentWidth &&
-              State.Column%Style.ContinuationIndentWidth != 0)
-          {
-              State.Column = State.Column + Style.ContinuationIndentWidth - 
-                  State.Column%Style.ContinuationIndentWidth;
+          if (State.Column - PrePreviousNonComment->ColumnWidth > ContinuationIndent) {
+              ContinuationIndent = State.Column - PrePreviousNonComment->ColumnWidth;
+              if (Style.ContinuationIndentWidth &&
+                  ContinuationIndent%Style.ContinuationIndentWidth)
+              {
+                  ContinuationIndent = ContinuationIndent +
+                      Style.ContinuationIndentWidth -
+                      ContinuationIndent%Style.ContinuationIndentWidth;
+              }
           }
           State.Stack.back().BreakBeforeParameter = true;
-          State.Stack.back().Indent = State.Column;
-          processed = true;
+          State.Column = ContinuationIndent;
+          State.Stack.back().Indent = ContinuationIndent;
       }
   }
 
