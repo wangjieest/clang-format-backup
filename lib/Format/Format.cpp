@@ -724,7 +724,7 @@ FormatStyle getRailStyle(FormatStyle::LanguageKind Language) {
   RailStyle.SpaceAfterTemplateKeyword = false;
   RailStyle.TabWidth = 4;
   RailStyle.AllowAllParametersOfDeclarationOnNextLine = false;
-  RailStyle.AllowShortFunctionsOnASingleLine = FormatStyle::SFS_None;
+  RailStyle.AllowShortFunctionsOnASingleLine = FormatStyle::SFS_InlineOnly;
   RailStyle.AlwaysBreakBeforeMultilineStrings = true;
   RailStyle.AlwaysBreakTemplateDeclarations = true;
   RailStyle.ConstructorInitializerAllOnOneLineOrOnePerLine = true;
