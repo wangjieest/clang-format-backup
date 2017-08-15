@@ -710,7 +710,7 @@ FormatStyle getRailStyle(FormatStyle::LanguageKind Language) {
   FormatStyle RailStyle = getGoogleStyle(Language);
   RailStyle.Language = Language;
   RailStyle.AlignAfterOpenBracket = FormatStyle::BAS_AlignParent;
-  RailStyle.AccessModifierOffset = -4;
+  RailStyle.AccessModifierOffset = -2;
   RailStyle.AlignEscapedNewlines = FormatStyle::ENAS_Left;
   RailStyle.AllowShortIfStatementsOnASingleLine = false;
   RailStyle.AllowShortLoopsOnASingleLine = true;
@@ -724,7 +724,7 @@ FormatStyle getRailStyle(FormatStyle::LanguageKind Language) {
   RailStyle.SpaceAfterTemplateKeyword = false;
   RailStyle.TabWidth = 4;
   RailStyle.AllowAllParametersOfDeclarationOnNextLine = false;
-  RailStyle.AllowShortFunctionsOnASingleLine = FormatStyle::SFS_InlineOnly;
+  RailStyle.AllowShortFunctionsOnASingleLine = FormatStyle::SFS_None;
   RailStyle.AlwaysBreakBeforeMultilineStrings = true;
   RailStyle.AlwaysBreakTemplateDeclarations = true;
   RailStyle.ConstructorInitializerAllOnOneLineOrOnePerLine = true;
