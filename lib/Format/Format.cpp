@@ -745,16 +745,16 @@ FormatStyle getRailStyle(FormatStyle::LanguageKind Language) {
   RailStyle.ColumnLimit = 100;
 
   if (Language == FormatStyle::LK_Java) {
-    RailStyle.AlignAfterOpenBracket = FormatStyle::BAS_DontAlign;
+    RailStyle.AlignAfterOpenBracket = FormatStyle::BAS_AlignParent;
     RailStyle.AlignOperands = false;
     RailStyle.AlignTrailingComments = false;
-    RailStyle.AllowShortFunctionsOnASingleLine = FormatStyle::SFS_Empty;
+    RailStyle.AllowShortFunctionsOnASingleLine = FormatStyle::SFS_None;
     RailStyle.AllowShortIfStatementsOnASingleLine = false;
-    RailStyle.AlwaysBreakBeforeMultilineStrings = false;
+    RailStyle.AlwaysBreakBeforeMultilineStrings = true;
     RailStyle.BreakBeforeBinaryOperators = FormatStyle::BOS_NonAssignment;
     RailStyle.ColumnLimit = 100;
     RailStyle.SpaceAfterCStyleCast = true;
-    RailStyle.SpacesBeforeTrailingComments = 1;
+    RailStyle.SpacesBeforeTrailingComments = 2;
   } else if (Language == FormatStyle::LK_JavaScript) {
     RailStyle.AlignAfterOpenBracket = FormatStyle::BAS_AlwaysBreak;
     RailStyle.AlignOperands = false;
