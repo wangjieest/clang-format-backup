@@ -33,7 +33,7 @@ namespace LLVM.ClangFormat
     public class OptionPageGrid : DialogPage
     {
         private string assumeFilename = "";
-        private string fallbackStyle = "Rail";
+        private string fallbackStyle = "Custom";
         private bool sortIncludes = false;
         private string style = "file";
         private bool formatOnSave = false;
@@ -55,7 +55,7 @@ namespace LLVM.ClangFormat
             public StyleConverter()
             {
                 // Initializes the standard values list with defaults.
-                values = new ArrayList(new string[] { "file", "Chromium", "Google", "LLVM", "Mozilla", "WebKit", "Rail" });
+                values = new ArrayList(new string[] { "file", "Chromium", "Google", "LLVM", "Mozilla", "WebKit", "Custom" });
             }
 
             public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
@@ -89,7 +89,7 @@ namespace LLVM.ClangFormat
         [Category("Format Options")]
         [DisplayName("Style")]
         [Description("Coding style, currently supports:\n" +
-                     "  - Predefined styles ('LLVM', 'Google', 'Chromium', 'Mozilla', 'WebKit', 'Rail').\n" +
+                     "  - Predefined styles ('LLVM', 'Google', 'Chromium', 'Mozilla', 'WebKit', 'Custom').\n" +
                      "  - 'file' to search for a YAML .clang-format or _clang-format\n" +
                      "    configuration file.\n" +
                      "  - A YAML configuration snippet.\n\n" +
@@ -351,7 +351,7 @@ namespace LLVM.ClangFormat
             var path = Path.GetDirectoryName(filePath);
             string text = view.TextBuffer.CurrentSnapshot.GetText();
             byte[] buffer = enc.GetBytes(text);
-            RunClangFormatAndApplyReplacements(buffer, 0, text.Length, path, filePath, options, view);
+            RunClangFormatAndApplyReplacements(buffer, 0, buffer.Length, path, filePath, options, view);
         }
 
         private void RunClangFormatAndApplyReplacements(byte[] buffer, int offset, int length, string path, string filePath, OptionPageGrid options, IWpfTextView view)
