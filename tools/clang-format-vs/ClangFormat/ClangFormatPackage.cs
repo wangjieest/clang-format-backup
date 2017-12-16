@@ -351,7 +351,7 @@ namespace LLVM.ClangFormat
             var path = Path.GetDirectoryName(filePath);
             string text = view.TextBuffer.CurrentSnapshot.GetText();
             byte[] buffer = enc.GetBytes(text);
-            RunClangFormatAndApplyReplacements(buffer, 0, text.Length, path, filePath, options, view);
+            RunClangFormatAndApplyReplacements(buffer, 0, buffer.Length, path, filePath, options, view);
         }
 
         private void RunClangFormatAndApplyReplacements(byte[] buffer, int offset, int length, string path, string filePath, OptionPageGrid options, IWpfTextView view)
