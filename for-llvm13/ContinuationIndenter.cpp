@@ -776,6 +776,9 @@ extern FormatToken *LeadingSlateContentDecl(const FormatToken &Cur);
 extern bool isSlateLSquare(const FormatToken &Cur);
 extern bool isSlateRSquare(const FormatToken &Cur);
 
+extern bool isSlateContentR(const FormatToken &Cur);
+extern bool isSlateWidgetRowDecl(const FormatToken &Cur);
+
 unsigned ContinuationIndenter::addTokenOnNewLine(LineState &State,
                                                  bool DryRun) {
   FormatToken &Current = *State.NextToken;
@@ -843,7 +846,7 @@ unsigned ContinuationIndenter::addTokenOnNewLine(LineState &State,
     State.Stack.back().Indent = State.Column;
     State.Stack.back().LastSpace = State.Column;
   } else if (LeadingSlateContentDecl(Previous)) {
-    // ValueContext()/NameContext()/WholeContext()/AddCustomRow()/AddSlot()
+    // ValueContent()/NameContent()/WholeContent()/AddCustomRow()/AddSlot()
     processed = true;
     State.Column =
         std::min(State.Stack.back().LastSpace, State.Stack.back().Indent);
@@ -894,6 +897,10 @@ unsigned ContinuationIndenter::addTokenOnNewLine(LineState &State,
       State.Stack.back().Indent = State.Column;
       State.Stack.back().LastSpace = State.Column;
     }
+  } else if (isSlateWidgetRowDecl(Current)) {
+    processed = true;
+    State.Column =
+        std::min(State.Stack.back().LastSpace, State.Stack.back().Indent);
   }
   if (!processed) {
     State.Column = getNewLineColumn(State);

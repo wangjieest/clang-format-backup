@@ -2593,7 +2593,7 @@ bool isSlateContentR(const FormatToken &Cur) {
     auto Name = Match->getPreviousNonComment();
     if (!Name || !Name->is(tok::identifier))
       break;
-
+    
     auto Period = Name->getPreviousNonComment();
     if (!Period || !Period->is(tok::period))
       break;
@@ -2607,8 +2607,43 @@ bool isSlateContentR(const FormatToken &Cur) {
     }
 
     Current = Period->getPreviousNonComment();
+
   }
 
+  return ret;
+}
+
+// .WholeRowContent()  .NameContent()  .ValueContent()
+// ^                   ^               ^              
+bool isSlateWidgetRowDecl(const FormatToken &Cur) {
+  auto Current = &Cur;
+  bool ret = false;
+  do {
+    if (!Current || !Current->is(tok::period))
+      break;
+
+    auto Name = Current->getNextNonComment();
+    if (!Name || !Name->is(tok::identifier))
+      break;
+    if (!(Name->TokenText == "WholeRowContent" ||
+          Name->TokenText == "NameContent" ||
+          Name->TokenText == "ValueContent"))
+      break;
+
+    auto LParen = Name->getNextNonComment();
+    if (!LParen || !LParen->is(tok::l_paren))
+      break;
+    auto Match = LParen->MatchingParen;
+    if (!Match || !Match->is(tok::r_paren))
+      break;
+
+    auto Next = Match->getNextNonComment();
+    if (!Next ||
+        !Next->isOneOf(tok::period, tok::l_square /*, tok::plus, tok::semi*/))
+      break;
+
+    ret = true;
+  } while (false);
   return ret;
 }
 
