@@ -1,0 +1,175 @@
+---
+AccessModifierOffset: -4
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlines: Left
+AlignOperands:   true
+AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: true
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: false
+BinPackParameters: false
+#BreakAfterJavaFieldAnnotations: false
+BreakBeforeBinaryOperators: NonAssignment
+#BreakBeforeBraces: Allman
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: Always
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterObjCDeclaration: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterExternBlock: true
+  BeforeCatch: true
+  BeforeElse: true
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeComma
+BreakInheritanceList: BeforeComma
+BreakStringLiterals: true
+ColumnLimit:     240
+CommentPragmas:  '^ IWYU pragma:'
+CompactNamespaces: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+Cpp11BracedListStyle: true
+#DeriveLineEnding:true
+DerivePointerAlignment: false
+DisableFormat:   false
+#ExperimentalAutoDetectBinPacking: true
+FixNamespaceComments: true
+IncludeBlocks:   Regroup
+IncludeCategories: 
+  - Regex:           '.*\.generated\.h'
+    Priority:        100
+  - Regex:           '.*PCH\.h"$'
+    Priority:        -1
+  - Regex:           '["<](Core|CoreFwd|CoreGlobals|CoreMinimal|CoreTypes|CoreUObject)\.h[">]'
+    Priority:        1
+  - Regex:           '["<](Engine|EngineDefines|EngineFwd|EngineGlobals|EngineMinimal|UnrealNetwork)\.h[">]'
+    Priority:        1
+  - Regex:           '["<](Slate|SlateFwd|SlateBasics|SlateExtras|SlateGlobals|SlateCore|InputCore|UMG|UMGStyle)\.h[">]'
+    Priority:        1
+  - Regex:           '".*"'
+    Priority:        3
+  - Regex:           '^<.*\.h>'
+    Priority:        4
+  - Regex:           '^<.*>'
+    Priority:        5
+IncludeIsMainRegex: '([-_](test|unittest))?$'
+SortIncludes:    true
+IndentCaseLabels: true
+IndentPPDirectives: None
+IndentWidth:     4
+IndentWrappedFunctionNames: true
+#JavaImportGroups:
+JavaScriptQuotes: Leave
+JavaScriptWrapImports: true
+KeepEmptyLinesAtTheStartOfBlocks: false
+#Language: LK_Cpp
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: Inner
+ObjCBinPackProtocolList: Never
+ObjCBlockIndentWidth: 4
+ObjCSpaceAfterProperty: false
+ObjCSpaceBeforeProtocolList: false
+#Penalty Advance
+PenaltyBreakAssignment: 2
+PenaltyBreakBeforeFirstCallParameter: 1
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 10000000
+PenaltyBreakTemplateDeclaration: 10
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 200
+PointerAlignment: Left
+RawStringFormats: 
+  - Language:        Cpp
+    Delimiters:      
+      - cc
+      - CC
+      - cpp
+      - Cpp
+      - cxx
+      - 'c++'
+      - 'C++'
+      - h
+      - hpp
+      - hh
+      - hxx
+      - 'h++'
+      - inl
+    CanonicalDelimiter: ''
+    BasedOnStyle:    google
+  - Language:        TextProto
+    Delimiters:      
+      - pb
+      - PB
+      - proto
+      - PROTO
+    EnclosingFunctions: 
+      - EqualsProto
+      - EquivToProto
+      - PARSE_PARTIAL_TEXT_PROTO
+      - PARSE_TEST_PROTO
+      - PARSE_TEXT_PROTO
+      - ParseTextOrDie
+      - ParseTextProtoOrDie
+    CanonicalDelimiter: ''
+  - Language:        CSharp
+    Delimiters:      
+      - cs
+ReflowComments:  false
+SortUsingDeclarations: true
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 2
+SpacesInAngles:  false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+Standard:        Cpp11
+TabWidth:        4
+#UseCRLF:        true
+UseTab:          ForContinuationAndIndentation
+# macro break line after
+StatementMacros: ['DECLARE_DELEGATE','DECLARE_MULTICAST_DELEGATE','DECLARE_EVENT','DECLARE_DYNAMIC_DELEGATE','DECLARE_DYNAMIC_MULTICAST_DELEGATE','DECLARE_DELEGATE_RetVal','DECLARE_DYNAMIC_DELEGATE_RetVal','DECLARE_DELEGATE_OneParam','DECLARE_MULTICAST_DELEGATE_OneParam','DECLARE_EVENT_OneParam','DECLARE_DYNAMIC_DELEGATE_OneParam','DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam','DECLARE_DELEGATE_RetVal_OneParam','DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam','DECLARE_DELEGATE_TwoParams','DECLARE_MULTICAST_DELEGATE_TwoParams','DECLARE_EVENT_TwoParams','DECLARE_DYNAMIC_DELEGATE_TwoParams','DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams','DECLARE_DELEGATE_RetVal_TwoParams','DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams','DECLARE_DELEGATE_ThreeParams','DECLARE_MULTICAST_DELEGATE_ThreeParams','DECLARE_EVENT_ThreeParams','DECLARE_DYNAMIC_DELEGATE_ThreeParams','DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams','DECLARE_DELEGATE_RetVal_ThreeParams','DECLARE_DYNAMIC_DELEGATE_RetVal_ThreeParams','DECLARE_DELEGATE_FourParams','DECLARE_MULTICAST_DELEGATE_FourParams','DECLARE_EVENT_FourParams','DECLARE_DYNAMIC_DELEGATE_FourParams','DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams','DECLARE_DELEGATE_RetVal_FourParams','DECLARE_DYNAMIC_DELEGATE_RetVal_FourParams','DECLARE_DELEGATE_FiveParams','DECLARE_MULTICAST_DELEGATE_FiveParams','DECLARE_EVENT_FiveParams','DECLARE_DYNAMIC_DELEGATE_FiveParams','DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams','DECLARE_DELEGATE_RetVal_FiveParams','DECLARE_DYNAMIC_DELEGATE_RetVal_FiveParams','DECLARE_DELEGATE_SixParams','DECLARE_MULTICAST_DELEGATE_SixParams','DECLARE_EVENT_SixParams','DECLARE_DYNAMIC_DELEGATE_SixParams','DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams','DECLARE_DELEGATE_RetVal_SixParams','DECLARE_DYNAMIC_DELEGATE_RetVal_SixParams','DECLARE_DELEGATE_SevenParams','DECLARE_MULTICAST_DELEGATE_SevenParams','DECLARE_EVENT_SevenParams','DECLARE_DYNAMIC_DELEGATE_SevenParams','DECLARE_DYNAMIC_MULTICAST_DELEGATE_SevenParams','DECLARE_DELEGATE_RetVal_SevenParams','DECLARE_DYNAMIC_DELEGATE_RetVal_SevenParams','DECLARE_DELEGATE_EightParams','DECLARE_MULTICAST_DELEGATE_EightParams','DECLARE_EVENT_EightParams','DECLARE_DYNAMIC_DELEGATE_EightParams','DECLARE_DYNAMIC_MULTICAST_DELEGATE_EightParams','DECLARE_DELEGATE_RetVal_EightParams','DECLARE_DYNAMIC_DELEGATE_RetVal_EightParams','DECLARE_DELEGATE_NineParams','DECLARE_MULTICAST_DELEGATE_NineParams','DECLARE_EVENT_NineParams','DECLARE_DYNAMIC_DELEGATE_NineParams','DECLARE_DYNAMIC_MULTICAST_DELEGATE_NineParams','DECLARE_DELEGATE_RetVal_NineParams','DECLARE_DYNAMIC_DELEGATE_RetVal_NineParams','UCLASS', 'UPROPERTY', 'UFUNCTION', 'USTRUCT','UMETA','UPARAM','UENUM','UDELEGATE','GENERATED_UCLASS_BODY','GENERATED_USTRUCT_BODY','GENERATED_UINTERFACE_BODY','GENERATED_IINTERFACE_BODY','GAS_ATTRIBUTE_ACCESSORS'
+]
+#macro keep line
+#TypenameMacros: ['STACK_OF', 'LIST_ENTRY']
+ForEachMacros:   
+  - for
+MacroBlockBegin: '^SLATE_BEGIN_ARGS.*$'
+MacroBlockEnd:   '^SLATE_END_ARGS.*$'
+...

@@ -1,9 +1,8 @@
 ﻿//===-- ClangFormatPackages.cs - VSPackage for clang-format ------*- C# -*-===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 //
@@ -25,6 +24,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using System.Linq;
+using System.Text;
 
 namespace LLVM.ClangFormat
 {
@@ -38,8 +38,8 @@ namespace LLVM.ClangFormat
         private string style = "file";
         private bool formatOnSave = false;
         private string formatOnSaveFileExtensions =
-            ".c;.cpp;.cxx;.cc;.tli;.tlh;.h;.hh;.hpp;.hxx;.hh;.inl" +
-            ".java;.js;.ts;.m;.mm;.proto;.protodevel;.td";
+            ".c;.cpp;.cxx;.cc;.tli;.tlh;.h;.hh;.hpp;.hxx;.hh;.inl;" +
+            ".java;.js;.ts;.m;.mm;.proto;.protodevel;.td;.cs";
         private bool outputDetailInfo = false;
 
         public OptionPageGrid Clone()
@@ -349,7 +349,13 @@ namespace LLVM.ClangFormat
 
             string filePath = Vsix.GetDocumentPath(view);
             var path = Path.GetDirectoryName(filePath);
+
             string text = view.TextBuffer.CurrentSnapshot.GetText();
+            if (!text.EndsWith(Environment.NewLine))
+            {
+                view.TextBuffer.Insert(view.TextBuffer.CurrentSnapshot.Length, Environment.NewLine);
+                text += Environment.NewLine;
+            }
             byte[] buffer = enc.GetBytes(text);
             RunClangFormatAndApplyReplacements(buffer, 0, buffer.Length, path, filePath, options, view);
         }
@@ -359,29 +365,7 @@ namespace LLVM.ClangFormat
             try
             {
                 string replacements = RunClangFormat(buffer, offset, length, path, filePath, options);
-                // clang-format returns no replacements if input text is empty
-                if (replacements.Length == 0)
-                    return;
-
-                var root = XElement.Parse(replacements);
-                var edit = view.TextBuffer.CreateEdit();
-                int last_offset_utf8 = 0;
-                int last_offset_utf16 = 0;
-                foreach (XElement replacement in root.Descendants("replacement"))
-                {
-                    int offset_utf8 = int.Parse(replacement.Attribute("offset").Value);
-                    int length_utf8 = int.Parse(replacement.Attribute("length").Value);
-                    // convert the multi bytes index to utf16 index
-                    // assume that offsets is in order.
-                    int offset_utf16 = enc.GetCharCount(buffer, last_offset_utf8, offset_utf8 - last_offset_utf8) + last_offset_utf16;
-                    int length_utf16 = enc.GetCharCount(buffer, offset_utf8, length_utf8);
-                    edit.Replace(offset_utf16, length_utf16, replacement.Value);
-                    last_offset_utf8 = offset_utf8;
-                    last_offset_utf16 = offset_utf16;
-                }
-                edit.Apply();
-                view.Selection.Clear();
-
+                ApplyClangFormatReplacements(replacements, view);
             }
             catch (Exception e)
             {
@@ -495,8 +479,36 @@ namespace LLVM.ClangFormat
                 Output("\n");
                 Output(output);
             }
-
             return output;
+        }
+
+        /// <summary>
+        /// Applies the clang-format replacements (xml) to the current view
+        /// </summary>
+        private static void ApplyClangFormatReplacements(string replacements, IWpfTextView view)
+        {
+            // clang-format returns no replacements if input text is empty
+            if (replacements.Length == 0)
+                return;
+
+            var root = XElement.Parse(replacements);
+            var edit = view.TextBuffer.CreateEdit();
+            int last_offset_utf8 = 0;
+            int last_offset_utf16 = 0;
+            foreach (XElement replacement in root.Descendants("replacement"))
+            {
+                int offset_utf8 = int.Parse(replacement.Attribute("offset").Value);
+                int length_utf8 = int.Parse(replacement.Attribute("length").Value);
+                // convert the multi bytes index to utf16 index
+                // assume that offsets is in order.
+                int offset_utf16 = enc.GetCharCount(buffer, last_offset_utf8, offset_utf8 - last_offset_utf8) + last_offset_utf16;
+                int length_utf16 = enc.GetCharCount(buffer, offset_utf8, length_utf8);
+                edit.Replace(offset_utf16, length_utf16, replacement.Value);
+                last_offset_utf8 = offset_utf8;
+                last_offset_utf16 = offset_utf16;
+            }
+            edit.Apply();
+            view.Selection.Clear();
         }
     }
 }

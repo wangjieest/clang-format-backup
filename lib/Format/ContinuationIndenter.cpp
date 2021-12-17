@@ -554,6 +554,16 @@ void ContinuationIndenter::addTokenOnCurrentLine(LineState &State, bool DryRun,
   }
 }
 
+extern bool isSlateNew(const FormatToken &Cur, bool TestSquare = false);
+extern bool isSlateRSlot(const FormatToken &Cur, uint32_t Deep = 10);
+extern bool isSlateRNew(const FormatToken &Cur, uint32_t Deep = 10);
+extern bool isSlateLSlot(const FormatToken &Cur);
+extern bool isSlateLSquare(const FormatToken &Cur);
+extern bool isSlateRSquare(const FormatToken &Cur);
+extern bool isSlateLParen(const FormatToken &Cur);
+extern bool isSlateRParen(const FormatToken &Cur);
+extern bool isSlateContent(const FormatToken &Cur);
+
 unsigned ContinuationIndenter::addTokenOnNewLine(LineState &State,
                                                  bool DryRun) {
   FormatToken &Current = *State.NextToken;
@@ -586,6 +596,45 @@ unsigned ContinuationIndenter::addTokenOnNewLine(LineState &State,
 
   // AlignParent
   bool processed = false;
+  if (Current.is(tok::r_square) && isSlateRSquare(Current)) {
+    processed = true;
+    State.Column = State.Stack[State.Stack.size() - 2].NestedBlockIndent;
+  } else if (Current.is(tok::l_square)) {
+    if (isSlateRSlot(Previous)) {
+      processed = true;
+      State.Stack.back().Indent -=
+          State.Stack.back().Indent % Style.IndentWidth;
+      State.Column = State.Stack.back().Indent;
+    } else if (isSlateLSquare(Current)) {
+      processed = true;
+      State.Stack.back().Indent -=
+          State.Stack.back().Indent % Style.IndentWidth;
+      State.Column = State.Stack.back().Indent;
+    }
+  } else if (Current.is(tok::plus) && isSlateRParen(Previous)) {
+    processed = true;
+    State.Column = State.Stack.back().Indent;
+  } else if (Current.is(tok::period)) {
+    if (isSlateRSlot(Previous)) {
+      processed = true;
+      State.Column = State.Stack[State.Stack.size() - 2].Indent;
+    } else if (isSlateRParen(Previous)) {
+      processed = true;
+      State.Column = State.Stack.back().Indent;
+    } else if (Previous.is(tok::r_paren) && Previous.MatchingParen) {
+      auto MatchName = Previous.MatchingParen->getPreviousNonComment();
+      if (MatchName && isSlateNew(*MatchName)) {
+        processed = true;
+        State.Column = State.Stack.back().Indent;
+      }
+    } else if (auto TextNext = Current.getNextNonComment()) {
+      if (isSlateContent(*TextNext)) {
+        processed = true;
+        State.Column = State.Stack.back().Indent;
+      }
+    }
+  }
+
   if (Style.AlignAfterOpenBracket == FormatStyle::BAS_AlignParent &&
       PreviousNonComment && PreviousNonComment->is(tok::l_paren) &&
       !Style.AllowAllParametersOfDeclarationOnNextLine ) {
