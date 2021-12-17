@@ -170,6 +170,9 @@ StatementMacros: ['DECLARE_DELEGATE','DECLARE_MULTICAST_DELEGATE','DECLARE_EVENT
 #TypenameMacros: ['STACK_OF', 'LIST_ENTRY']
 ForEachMacros:   
   - for
-MacroBlockBegin: '^SLATE_BEGIN_ARGS.*$'
-MacroBlockEnd:   '^SLATE_END_ARGS.*$'
+
+MacroBlockBegin: '^SLATE_BEGIN_ARGS\(.*\)$'
+MacroBlockEnd:   '^SLATE_END_ARGS\(.*\)$'
+#MacroBlockBegin: '^SLATE_BEGIN_ARGS.*$'
+#MacroBlockEnd:   '^SLATE_END_ARGS.*$'
 ...
