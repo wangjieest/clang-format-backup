@@ -757,6 +757,12 @@ extern bool isSlateNew(const FormatToken &Cur, bool TestSquare = false);
 extern bool isSlateNewLParen(const FormatToken &Cur);
 extern bool isSlateNewRParen(const FormatToken &Cur);
 
+extern bool isSlateConstructLParen(const FormatToken &Cur);
+
+extern FormatToken *SlateConstructArgumentsRParenR(const FormatToken &Cur,
+                                                   uint32_t Deep = 0);
+extern FormatToken *isSlateConstructArgumentsRParen(const FormatToken &Cur);
+
 extern bool isSlateNewRParenR(const FormatToken &Cur);
 extern FormatToken *LeadingSlateNewR(const FormatToken &Cur);
 
@@ -828,6 +834,9 @@ unsigned ContinuationIndenter::addTokenOnNewLine(LineState &State,
     // just after Slot()
     processed = true;
     State.Column = State.Stack[State.Stack.size() - 2].StartOfFunctionCall;
+    if (!State.Column)
+      State.Column =
+          std::min(State.Stack.back().LastSpace, State.Stack.back().Indent);
     State.Column =
         ((State.Column + Style.IndentWidth - 1) / Style.IndentWidth) *
         Style.IndentWidth;
@@ -877,6 +886,14 @@ unsigned ContinuationIndenter::addTokenOnNewLine(LineState &State,
     State.Column = State.Stack[State.Stack.size() - 2].NestedBlockIndent;
     State.Stack.back().Indent = State.Column;
     State.Stack.back().LastSpace = State.Column;
+  } else if (SlateConstructArgumentsRParenR(Previous)) {
+    if (Current.is(tok::comment) || Current.is(tok::period) ||
+        isSlateLSquare(Current)) {
+      processed = true;
+      State.Column = State.Stack[State.Stack.size() - 2].NestedBlockIndent;
+      State.Stack.back().Indent = State.Column;
+      State.Stack.back().LastSpace = State.Column;
+    }
   }
   if (!processed) {
     State.Column = getNewLineColumn(State);

@@ -2655,6 +2655,137 @@ bool isSlateContentDeclLeadingIdent(const FormatToken &Cur) {
   return false;
 }
 
+// SXXXXX::Construct( SXXXX::FArguments()
+//                  ^
+bool isSlateConstructLParen(const FormatToken &Cur) {
+  bool ret = false;
+  do {
+    auto Current = &Cur;
+    if (!Current || !Current->is(tok::l_paren))
+      break;
+
+    auto Name = Current->getPreviousNonComment();
+    if (!Name || !Name->is(tok::identifier) || Name->TokenText != "Construct")
+      break;
+
+    auto Pre = Name->getPreviousNonComment();
+    if (!Pre || !Pre->is(tok::coloncolon))
+      break;
+
+    Name = Pre->getPreviousNonComment();
+    if (!Name || !Name->is(tok::identifier) || !Name->TokenText.startswith("S"))
+      break;
+
+    auto Next = Current->getNextNonComment();
+    if (!Next || !Next->is(tok::identifier) ||
+        Name->TokenText != Name->TokenText)
+      break;
+
+    Next = Next->getNextNonComment();
+    if (!Next || !Next->is(tok::coloncolon))
+      break;
+
+    Next = Next->getNextNonComment();
+    if (!Next || !Next->is(tok::identifier) || Name->TokenText != "FArguments")
+      break;
+    auto LParen = Next->getNextNonComment();
+    if (!LParen || !LParen->is(tok::l_paren))
+      break;
+    auto Match = LParen->MatchingParen;
+    if (!Match || !Match->is(tok::r_paren))
+      break;
+
+    ret = true;
+  } while (0);
+  return ret;
+}
+
+// SXXXX::Construct( SXXXX::FArguments()
+//                                     ^
+FormatToken *isSlateConstructArgumentsRParen(const FormatToken &Cur) {
+  FormatToken *Ret = nullptr;
+  do {
+    auto Current = &Cur;
+    if (!Current || !Current->is(tok::r_paren))
+      break;
+    auto Match = Current->MatchingParen;
+    if (!Match || !Match->is(tok::l_paren))
+      break;
+
+    auto Pre = Match->getPreviousNonComment();
+    if (!Pre || !Pre->is(tok::identifier) || Pre->TokenText != "FArguments")
+      break;
+
+    Pre = Pre->getPreviousNonComment();
+    if (!Pre || !Pre->is(tok::coloncolon))
+      break;
+
+    Pre = Pre->getPreviousNonComment();
+    if (!Pre || !Pre->is(tok::identifier) || !Pre->TokenText.startswith("S"))
+      break;
+    auto Name = Pre;
+
+    Pre = Pre->getPreviousNonComment();
+    if (!Pre || !Pre->is(tok::l_paren))
+      break;
+
+    Pre = Pre->getPreviousNonComment();
+    if (!Pre || !Pre->is(tok::identifier) || Pre->TokenText != "Construct")
+      break;
+    Pre = Pre->getPreviousNonComment();
+    if (!Pre || !Pre->is(tok::coloncolon))
+      break;
+
+    Pre = Pre->getPreviousNonComment();
+    if (!Pre || !Pre->is(tok::identifier) || Name->TokenText != Pre->TokenText)
+      break;
+
+    Ret = Pre;
+  } while (0);
+  return Ret;
+}
+
+FormatToken *SlateConstructArgumentsRParenR(const FormatToken &Cur,
+                                            uint32_t Deep = 0) {
+  FormatToken *Ret = nullptr;
+  Deep = !Deep ? PredinfedDeep : Deep;
+  do {
+    auto Current = &Cur;
+    while (Current) {
+      if (isSlateConstructArgumentsRParen(*Current)) {
+        Ret = const_cast<FormatToken *>(Current);
+        break;
+      }
+      if (!Current->is(tok::r_paren))
+        break;
+
+      auto Match = Current->MatchingParen;
+      if (!Match || !Match->is(tok::l_paren))
+        break;
+      auto Name = Match->getPreviousNonComment();
+      if (!Name || !Name->is(tok::identifier))
+        break;
+      auto Pre = Name->getPreviousNonComment();
+      if (!Pre || !(Pre->is(tok::period) || Pre->is(tok::coloncolon)))
+        break;
+      if (!Pre->is(tok::period)) {
+        if (!(Name->TokenText == "Slot" || Name->TokenText == "SlotAt"))
+          break;
+        Pre = Pre->getPreviousNonComment();
+        if (!Pre || !SlotMap.contains(Pre->TokenText))
+          break;
+        Pre = Pre->getPreviousNonComment();
+        if (!Pre || !Pre->is(tok::plus))
+          break;
+      }
+      Current = Pre->getPreviousNonComment();
+      if ((Deep > 0) && (--Deep == 0))
+        break;
+    }
+  } while (0);
+  return Ret;
+}
+
 FormatToken *LeadingSlateContentDecl(const FormatToken &Cur) {
   FormatToken *Ret = nullptr;
   uint32_t Deep = PredinfedDeep;
@@ -4101,6 +4232,10 @@ bool TokenAnnotator::mustBreakBefore(const AnnotatedLine &Line,
 
   if (isSlateSlotDeclLeadingPlus(Left)) {
     return false;
+  }
+
+  if (!Right.is(tok::r_paren) && isSlateConstructArgumentsRParen(Left)) {
+    return true;
   }
 
   if (Right.is(tok::period))
